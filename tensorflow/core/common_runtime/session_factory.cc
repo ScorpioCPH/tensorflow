@@ -44,6 +44,7 @@ SessionFactories* session_factories() {
 void SessionFactory::Register(const string& runtime_type,
                               SessionFactory* factory) {
   mutex_lock l(*get_session_factory_lock());
+  CPH_VLOG(INFO) << "SessionFactory::Register -> runtime_type: " << runtime_type;
   if (!session_factories()->insert({runtime_type, factory}).second) {
     LOG(ERROR) << "Two session factories are being registered "
                << "under" << runtime_type;

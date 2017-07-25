@@ -58,6 +58,7 @@ int NumSchedulableCPUs() {
 #endif
 #if defined(__APPLE__) && defined(__MACH__)
   unsigned int count = std::thread::hardware_concurrency();
+  CPH_VLOG(INFO) << "NumSchedulableCPUs: " << count;
   if (count > 0) return static_cast<int>(count);
 #endif
   const int kDefaultCores = 4;  // Semi-conservative guess

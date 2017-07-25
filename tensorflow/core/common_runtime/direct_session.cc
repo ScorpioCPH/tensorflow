@@ -82,6 +82,7 @@ thread::ThreadPool* NewThreadPoolFromSessionOptions(
     const SessionOptions& options) {
   const int32 num_threads = NumInterOpThreadsFromSessionOptions(options);
   VLOG(1) << "Direct session inter op parallelism threads: " << num_threads;
+  CPH_VLOG(INFO) << "Direct session inter op parallelism threads: " << num_threads;
   return new thread::ThreadPool(options.env, "Compute", num_threads);
 }
 
@@ -99,6 +100,7 @@ thread::ThreadPool* NewThreadPoolFromThreadPoolOptions(
 }
 
 thread::ThreadPool* GlobalThreadPool(const SessionOptions& options) {
+  CPH_VLOG(INFO) << "GlobalThreadPool()";
   static thread::ThreadPool* const thread_pool =
       NewThreadPoolFromSessionOptions(options);
   return thread_pool;
@@ -127,6 +129,7 @@ class DirectSessionFactory : public SessionFactory {
   }
 
   Session* NewSession(const SessionOptions& options) override {
+    CPH_VLOG(INFO) << "DirectSessionFactory::NewSession";
     // Must do this before the CPU allocator is created.
     if (options.config.graph_options().build_cost_model() > 0) {
       EnableCPUAllocatorFullStats(true);
@@ -229,6 +232,10 @@ DirectSession::DirectSession(const SessionOptions& options,
       factory_(factory),
       cancellation_manager_(new CancellationManager()),
       operation_timeout_in_ms_(options_.config.operation_timeout_in_ms()) {
+  CPH_VLOG(INFO) << "new DirectSession::DirectSession";
+  CPH_VLOG(INFO) << "options_.config.session_inter_op_thread_pool_size(): " << options_.config.session_inter_op_thread_pool_size();
+  CPH_VLOG(INFO) << "options_.config.use_per_session_threads(): " << options_.config.use_per_session_threads();
+
   if (options_.config.session_inter_op_thread_pool_size() > 0) {
     for (int i = 0; i < options_.config.session_inter_op_thread_pool_size();
          ++i) {
@@ -237,9 +244,11 @@ DirectSession::DirectSession(const SessionOptions& options,
     }
     owns_thread_pools_ = true;
   } else if (options_.config.use_per_session_threads()) {
+
     thread_pools_.push_back(NewThreadPoolFromSessionOptions(options_));
     owns_thread_pools_ = true;
   } else {
+
     thread_pools_.push_back(GlobalThreadPool(options));
     owns_thread_pools_ = false;
   }
@@ -256,6 +265,7 @@ DirectSession::DirectSession(const SessionOptions& options,
   session_handle_ = "direct";
   int devices_added = 0;
   if (options.config.log_device_placement()) {
+    CPH_VLOG(INFO) << "log_device_placement";
     const string mapping_str = device_mgr_->DeviceMappingString();
     if (mapping_str.empty()) {
       printf("Device mapping: no known devices.\n");
@@ -276,6 +286,7 @@ DirectSession::DirectSession(const SessionOptions& options,
     }
     ++devices_added;
   }
+  CPH_VLOG(INFO) << "devices_added: " << devices_added;
 }
 
 DirectSession::~DirectSession() {
@@ -366,6 +377,7 @@ Status DirectSession::Run(const NamedTensorList& inputs,
                           const std::vector<string>& target_nodes,
                           std::vector<Tensor>* outputs) {
   RunMetadata run_metadata;
+  CPH_VLOG(INFO) << "DirectSession::Run.1";
   return Run(RunOptions(), inputs, output_names, target_nodes, outputs,
              &run_metadata);
 }
@@ -401,6 +413,7 @@ Status DirectSession::Run(const RunOptions& run_options,
                           const std::vector<string>& target_nodes,
                           std::vector<Tensor>* outputs,
                           RunMetadata* run_metadata) {
+  CPH_VLOG(INFO) << "DirectSession::Run.2";
   TF_RETURN_IF_ERROR(CheckNotClosed());
   direct_session_runs->GetCell()->IncrementBy(1);
   {
@@ -415,6 +428,7 @@ Status DirectSession::Run(const RunOptions& run_options,
   std::vector<string> input_tensor_names;
   input_tensor_names.reserve(inputs.size());
   for (const auto& it : inputs) {
+    CPH_VLOG(INFO) << "input: " << it.first;
     input_tensor_names.push_back(it.first);
   }
 
@@ -467,6 +481,7 @@ Status DirectSession::Run(const RunOptions& run_options,
     return s;
   }
 
+  CPH_VLOG(INFO) << "Create a run state and start execution";
   // Create a run state and start execution.
   RunState run_state(args.step_id, &devices_);
   run_state.rendez = new IntraProcessRendezvous(device_mgr_.get());
@@ -981,6 +996,7 @@ Status DirectSession::GetOrCreateExecutors(
     thread::ThreadPool* pool, gtl::ArraySlice<string> inputs,
     gtl::ArraySlice<string> outputs, gtl::ArraySlice<string> target_nodes,
     ExecutorsAndKeys** executors_and_keys, RunStateArgs* run_state_args) {
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors";
   int64 handle_name_counter_value = -1;
   if (LogMemory::IsEnabled() || run_state_args->is_partial_run) {
     handle_name_counter_value = handle_name_counter_.fetch_add(1);
