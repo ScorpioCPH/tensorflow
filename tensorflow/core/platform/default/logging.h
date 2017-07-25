@@ -90,6 +90,9 @@ class LogMessageFatal : public LogMessage {
   if (TF_PREDICT_FALSE(VLOG_IS_ON(lvl))) \
   ::tensorflow::internal::LogMessage(__FILE__, __LINE__, tensorflow::INFO)
 
+#define CPH_VLOG(lvl)      \
+  VLOG(lvl) << "CPH >> "
+
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
 // compilation mode.  Therefore, it is safe to do things like:
