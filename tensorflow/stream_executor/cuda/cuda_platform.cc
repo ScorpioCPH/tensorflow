@@ -97,6 +97,7 @@ port::StatusOr<StreamExecutor*> CudaPlatform::FirstExecutorForBus(
 Platform::Id CudaPlatform::id() const { return kCudaPlatformId; }
 
 int CudaPlatform::VisibleDeviceCount() const {
+  CPH_VLOG(INFO) << "CudaPlatform::VisibleDeviceCount()";
   // Throw away the result - it logs internally, and this [containing] function
   // isn't in the path of user control. It's safe to call this > 1x.
   if (!cuda::CUDADriver::Init().ok()) {

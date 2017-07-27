@@ -39,7 +39,7 @@ limitations under the License.
 namespace tensorflow {
 namespace port {
 
-void InitMain(const char* usage, int* argc, char*** argv) {}
+void InitMain(const char* usage, int* argc, char*** argv) {CPH_VLOG(INFO) << "InitMain()";}
 
 string Hostname() {
   char hostname[1024];

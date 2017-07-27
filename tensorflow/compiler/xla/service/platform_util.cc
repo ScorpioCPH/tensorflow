@@ -79,6 +79,7 @@ PlatformUtil::GetSupportedPlatforms() {
 
 /* static */ StatusOr<se::Platform*> PlatformUtil::GetDefaultPlatform() {
   TF_ASSIGN_OR_RETURN(auto platforms, GetSupportedPlatforms());
+  CPH_VLOG(INFO) << "GetDefaultPlatform.Size: " << platforms.size();
   if (platforms.empty()) {
     return NotFound("no platforms found");
   } else if (platforms.size() == 1) {
@@ -87,6 +88,9 @@ PlatformUtil::GetSupportedPlatforms() {
     // In the service we always link the cpu backend for ComputeConstant. So if
     // one of the two platforms is CPU then pick the other (non-cpu) platform as
     // the default.
+    CPH_VLOG(INFO) << "platforms[0]->id(): " << platforms[0]->id();
+    CPH_VLOG(INFO) << "platforms[1]->id(): " << platforms[1]->id();
+    CPH_VLOG(INFO) << "se::host::kHostPlatformId: " << se::host::kHostPlatformId;
     if (platforms[0]->id() == se::host::kHostPlatformId) {
       return platforms[1];
     } else if (platforms[1]->id() == se::host::kHostPlatformId) {

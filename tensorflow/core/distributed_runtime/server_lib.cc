@@ -39,6 +39,7 @@ ServerFactories* server_factories() {
 void ServerFactory::Register(const string& server_type,
                              ServerFactory* factory) {
   mutex_lock l(*get_server_factory_lock());
+  CPH_VLOG(INFO) << "ServerFactory::Register: " << server_type;
   if (!server_factories()->insert({server_type, factory}).second) {
     LOG(ERROR) << "Two server factories are being registered under "
                << server_type;
@@ -49,6 +50,7 @@ void ServerFactory::Register(const string& server_type,
 Status ServerFactory::GetFactory(const ServerDef& server_def,
                                  ServerFactory** out_factory) {
   mutex_lock l(*get_server_factory_lock());
+  CPH_VLOG(INFO) << "ServerFactory::GetFactory";
   // TODO(mrry): Improve the error reporting here.
   for (const auto& server_factory : *server_factories()) {
     if (server_factory.second->AcceptsOptions(server_def)) {
@@ -66,6 +68,7 @@ Status ServerFactory::GetFactory(const ServerDef& server_def,
 Status NewServer(const ServerDef& server_def,
                  std::unique_ptr<ServerInterface>* out_server) {
   ServerFactory* factory;
+  CPH_VLOG(INFO) << "ServerFactory::NewServer";
   TF_RETURN_IF_ERROR(ServerFactory::GetFactory(server_def, &factory));
   return factory->NewServer(server_def, out_server);
 }

@@ -106,6 +106,7 @@ class OptimizationPassRegistration {
   OptimizationPassRegistration(OptimizationPassRegistry::Grouping grouping,
                                int phase,
                                std::unique_ptr<GraphOptimizationPass> pass) {
+    CPH_VLOG(INFO) << "OptimizationPassRegistration...";
     OptimizationPassRegistry::Global()->Register(grouping, phase,
                                                  std::move(pass));
   }

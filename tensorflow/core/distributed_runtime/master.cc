@@ -68,7 +68,7 @@ Master::Master(MasterEnv* env, double session_gc_seconds)
   // Right now, a master service must be co-located with a device.
   // Otherwise, fetches do not work.
   CHECK(!env->local_devices.empty());
-
+  CPH_VLOG(INFO) << "new Master";
   if (session_gc_seconds_ > 0.0) {
     gc_thread_ = env_->env->StartThread(ThreadOptions(), "TF_master_GC",
                                         [this]() { GC(); });

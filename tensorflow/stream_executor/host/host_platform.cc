@@ -39,6 +39,7 @@ HostPlatform::~HostPlatform() {}
 Platform::Id HostPlatform::id() const { return kHostPlatformId; }
 
 int HostPlatform::VisibleDeviceCount() const {
+  CPH_VLOG(INFO) << "HostPlatform::VisibleDeviceCount()";
   return std::thread::hardware_concurrency();
 }
 

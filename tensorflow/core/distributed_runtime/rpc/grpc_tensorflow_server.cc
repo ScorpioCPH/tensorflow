@@ -95,6 +95,7 @@ void Usage(char* const argv_0) {
 }
 
 int main(int argc, char* argv[]) {
+  std::cout << "grpc_tensorflow_server.main()";
   tensorflow::string cluster_spec;
   tensorflow::string job_name;
   int task_index = 0;

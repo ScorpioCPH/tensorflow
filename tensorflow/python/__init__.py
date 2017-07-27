@@ -46,7 +46,9 @@ import traceback
 
 import numpy as np
 
+print("import pywrap_tensorflow.1")
 from tensorflow.python import pywrap_tensorflow
+print("import pywrap_tensorflow.2")
 
 # Protocol buffers
 from tensorflow.core.framework.graph_pb2 import *

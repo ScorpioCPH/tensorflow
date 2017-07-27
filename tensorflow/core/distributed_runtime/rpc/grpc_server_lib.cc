@@ -106,6 +106,7 @@ GrpcServer::~GrpcServer() {
 Status GrpcServer::Init(
     ServiceInitFunction service_func,
     const RendezvousMgrCreationFunction& rendezvous_mgr_func) {
+  CPH_VLOG(INFO) << "GrpcServer::Init()";
   mutex_lock l(mu_);
   CHECK_EQ(state_, NEW);
   master_env_.env = env_;
@@ -303,6 +304,7 @@ Status GrpcServer::WorkerCacheFactory(const WorkerCacheFactoryOptions& options,
 }
 
 Status GrpcServer::Start() {
+  CPH_VLOG(INFO) << "GrpcServer::Start()";
   mutex_lock l(mu_);
   switch (state_) {
     case NEW: {
@@ -382,6 +384,7 @@ std::unique_ptr<Master> GrpcServer::CreateMaster(MasterEnv* master_env) {
 /* static */
 Status GrpcServer::Create(const ServerDef& server_def, Env* env,
                           std::unique_ptr<ServerInterface>* out_server) {
+  CPH_VLOG(INFO) << "GrpcServer::Create()";
   std::unique_ptr<GrpcServer> ret(
       new GrpcServer(server_def, env == nullptr ? Env::Default() : env));
   ServiceInitFunction service_func = nullptr;

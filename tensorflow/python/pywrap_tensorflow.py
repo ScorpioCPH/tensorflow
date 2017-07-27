@@ -32,13 +32,17 @@ import traceback
 # imported using `tf.load_op_library()` can access symbols defined in
 # _pywrap_tensorflow.so.
 try:
+  print("pywrap_tensorflow called")
   # TODO(keveman,mrry): Support dynamic op loading on platforms that do not
   # use `dlopen()` for dynamic loading.
   _use_rtld_global = hasattr(sys, 'getdlopenflags') and hasattr(sys, 'setdlopenflags')
+  print("_use_rtld_global: ", _use_rtld_global)
   if _use_rtld_global:
     _default_dlopen_flags = sys.getdlopenflags()
     sys.setdlopenflags(_default_dlopen_flags | ctypes.RTLD_GLOBAL)
+  print("import pywrap_tensorflow_internal.1")
   from tensorflow.python.pywrap_tensorflow_internal import *
+  print("import pywrap_tensorflow_internal.2")
   from tensorflow.python.pywrap_tensorflow_internal import __version__
   from tensorflow.python.pywrap_tensorflow_internal import __git_version__
   from tensorflow.python.pywrap_tensorflow_internal import __compiler_version__

@@ -149,10 +149,13 @@ int ServiceOptions::intra_op_parallelism_threads() const {
 
 /* static */ StatusOr<std::unique_ptr<Backend>>
 Service::CreateComputeConstantBackend() {
+  CPH_VLOG(INFO) << "Service::CreateComputeConstantBackend()";
   TF_ASSIGN_OR_RETURN(std::vector<se::Platform*> platforms,
                       PlatformUtil::GetSupportedPlatforms());
   for (auto* platform : platforms) {
+    CPH_VLOG(INFO) << "platform->id(): " << platform->id();
     if (platform->id() == se::host::kHostPlatformId) {
+      CPH_VLOG(INFO) << "se::host::kHostPlatformId: " << se::host::kHostPlatformId;
       BackendOptions backend_options;
       backend_options.set_platform(platform);
       backend_options.set_number_of_replicas(1);
