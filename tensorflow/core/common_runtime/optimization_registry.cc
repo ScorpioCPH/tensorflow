@@ -31,6 +31,7 @@ void OptimizationPassRegistry::Register(
 
 Status OptimizationPassRegistry::RunGrouping(
     Grouping grouping, const GraphOptimizationPassOptions& options) {
+  CPH_VLOG(1) << "OptimizationPassRegistry::RunGrouping()";
   auto group = groups_.find(grouping);
   if (group != groups_.end()) {
     for (auto& phase : group->second) {
