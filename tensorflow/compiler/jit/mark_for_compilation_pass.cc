@@ -294,12 +294,16 @@ Status MarkForCompilationPass::Run(
       options.session_options->config.graph_options()
           .optimizer_options()
           .global_jit_level();
+
+  CPH_VLOG(INFO) << "global_jit_level: " << global_jit_level;
   if (global_jit_level == OptimizerOptions::DEFAULT) {
     // To set compilation to be on by default, change the following line.
     global_jit_level = OptimizerOptions::OFF;
   }
+
   legacy_flags::MarkForCompilationPassFlags* flags =
       legacy_flags::GetMarkForCompilationPassFlags();
+
   if (flags->tf_xla_auto_jit == -1 ||
       (1 <= flags->tf_xla_auto_jit && flags->tf_xla_auto_jit <= 2)) {
     // If the flag tf_xla_auto_jit is a valid, non-zero setting, it overrides
@@ -307,14 +311,19 @@ Status MarkForCompilationPass::Run(
     global_jit_level =
         static_cast<OptimizerOptions::GlobalJitLevel>(flags->tf_xla_auto_jit);
   }
+
+
   const FunctionLibraryDefinition* fld = options.flib_def;
+
   auto is_compilable = [global_jit_level, fld](const Node* node,
                                                const DeviceType& device_type) {
     const XlaOpRegistry::DeviceRegistration* registration;
+
     if (!XlaOpRegistry::GetCompilationDevice(device_type.type(),
                                              &registration)) {
       return false;
     }
+
     // If this device requires a JIT, we must say yes.
     if (registration->requires_compilation) return true;
 
@@ -329,6 +338,8 @@ Status MarkForCompilationPass::Run(
     // Otherwise use the value of global_jit_level.
     return registration->enable_jit_by_default && global_jit_level > 0;
   };
+
+
   return RunImpl(options, is_compilable);
 }
 

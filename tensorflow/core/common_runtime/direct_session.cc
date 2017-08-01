@@ -996,7 +996,7 @@ Status DirectSession::GetOrCreateExecutors(
     thread::ThreadPool* pool, gtl::ArraySlice<string> inputs,
     gtl::ArraySlice<string> outputs, gtl::ArraySlice<string> target_nodes,
     ExecutorsAndKeys** executors_and_keys, RunStateArgs* run_state_args) {
-  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors";
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.1";
   int64 handle_name_counter_value = -1;
   if (LogMemory::IsEnabled() || run_state_args->is_partial_run) {
     handle_name_counter_value = handle_name_counter_.fetch_add(1);
@@ -1013,6 +1013,8 @@ Status DirectSession::GetOrCreateExecutors(
       str_util::Join(inputs, ","), "->", str_util::Join(outputs, ","), "/",
       str_util::Join(target_nodes, ","), "/", run_state_args->is_partial_run,
       "/", debug_tensor_watches_summary);
+
+  CPH_VLOG(INFO) << "key: " << key;
   // Set the handle, if it's needed to log memory or for partial run.
   if (handle_name_counter_value >= 0) {
     run_state_args->handle =
@@ -1029,6 +1031,7 @@ Status DirectSession::GetOrCreateExecutors(
     }
   }
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.2";
   // Slow lookup path, the unsorted key missed the cache.
   // Sort the inputs and outputs, and look up with the sorted key in case an
   // earlier call used a different order of inputs and outputs.
@@ -1046,6 +1049,8 @@ Status DirectSession::GetOrCreateExecutors(
       str_util::Join(inputs_sorted, ","), "->",
       str_util::Join(outputs_sorted, ","), "/", str_util::Join(tn_sorted, ","),
       "/", run_state_args->is_partial_run, "/", debug_tensor_watches_summary);
+
+  CPH_VLOG(INFO) << "sorted_key: " << sorted_key;
   // Set the handle, if its needed to log memory or for partial run.
   if (handle_name_counter_value >= 0) {
     run_state_args->handle =
@@ -1064,6 +1069,7 @@ Status DirectSession::GetOrCreateExecutors(
     }
   }
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.3";
   // Nothing found, so create the executors and store in the cache.
   BuildGraphOptions options;
   options.feed_endpoints = inputs_sorted;
@@ -1074,8 +1080,10 @@ Status DirectSession::GetOrCreateExecutors(
     options.debug_options = run_state_args->debug_options;
   }
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.3.1";
   std::shared_ptr<ExecutorsAndKeys> ek(new ExecutorsAndKeys);
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.3.2";
   // The executor_lock_ is intentionally released while executor is
   // being created.
   std::unordered_map<string, std::unique_ptr<Graph>> graphs;
@@ -1083,6 +1091,7 @@ Status DirectSession::GetOrCreateExecutors(
                                   run_state_args, &ek->input_types,
                                   &ek->output_types));
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.3.3";
   if (run_state_args->is_partial_run) {
     ek->graph = std::move(run_state_args->graph);
     std::unordered_set<StringPiece, StringPiece::Hasher> names;
@@ -1100,12 +1109,16 @@ Status DirectSession::GetOrCreateExecutors(
       }
     }
   }
+
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.4";
   ek->items.reserve(graphs.size());
   const auto& optimizer_opts =
       options_.config.graph_options().optimizer_options();
   GraphOptimizer optimizer(optimizer_opts);
   for (auto iter = graphs.begin(); iter != graphs.end(); ++iter) {
+    CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.4.1";
     const string& partition_name = iter->first;
+    CPH_VLOG(INFO) << "partition_name: " << partition_name;
     std::unique_ptr<Graph>& partition_graph = iter->second;
     const int graph_def_version = partition_graph->versions().producer();
 
@@ -1146,7 +1159,9 @@ Status DirectSession::GetOrCreateExecutors(
     };
     params.node_outputs_cb = node_outputs_callback_;
 
+    CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.4.2";
     optimizer.Optimize(lib, options_.env, device, &iter->second);
+    CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.4.3";
 
     // EXPERIMENTAL: tfdbg inserts debug nodes in the graph.
     if (!options.debug_options.debug_tensor_watch_opts().empty()) {
@@ -1166,6 +1181,7 @@ Status DirectSession::GetOrCreateExecutors(
     item->executor.reset(executor);
   }
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.5";
   // Cache the mapping from input/output names to graph elements to
   // avoid recomputing it every time.
   if (!run_state_args->is_partial_run) {
@@ -1199,6 +1215,7 @@ Status DirectSession::GetOrCreateExecutors(
     }
   }
 
+  CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.6";
   // Reacquire the lock, try to insert into the map.
   mutex_lock l(executor_lock_);
 
@@ -1219,12 +1236,15 @@ Status DirectSession::CreateGraphs(
     std::unique_ptr<FunctionLibraryDefinition>* flib_def,
     RunStateArgs* run_state_args, DataTypeVector* input_types,
     DataTypeVector* output_types) {
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.1";
   mutex_lock l(graph_def_lock_);
   std::unique_ptr<SimpleClientGraph> client_graph;
 
   std::unique_ptr<SimpleGraphExecutionState> temp_exec_state_holder;
   SimpleGraphExecutionState* execution_state = nullptr;
+
   if (options_.config.graph_options().place_pruned_graph()) {
+    CPH_VLOG(INFO) << "DirectSession::CreateGraphs.1.1";
     // Because we are placing pruned graphs, we need to create a
     // new SimpleGraphExecutionState for every new unseen graph,
     // and then place it.
@@ -1238,11 +1258,13 @@ Status DirectSession::CreateGraphs(
         &temp_exec_state_holder, &client_graph));
     execution_state = temp_exec_state_holder.get();
   } else {
+    CPH_VLOG(INFO) << "DirectSession::CreateGraphs.1.2";
     execution_state = execution_state_.get();
     TF_RETURN_IF_ERROR(
         execution_state->BuildGraph(subgraph_options, &client_graph));
   }
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.2";
   if (subgraph_options.feed_endpoints.size() !=
       client_graph->feed_types.size()) {
     return errors::Internal(
@@ -1260,6 +1282,7 @@ Status DirectSession::CreateGraphs(
         client_graph->fetch_types.size());
   }
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.3";
   auto current_stateful_placements = execution_state->GetStatefulPlacements();
   // Update our current state based on the execution_state's
   // placements.  If there are any mismatches for a node,
@@ -1280,6 +1303,7 @@ Status DirectSession::CreateGraphs(
 
   stateful_placements_ = execution_state->GetStatefulPlacements();
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.4";
   // Remember the graph in run state if this is a partial run.
   if (run_state_args->is_partial_run) {
     run_state_args->graph.reset(new Graph(flib_def_.get()));
@@ -1310,6 +1334,7 @@ Status DirectSession::CreateGraphs(
     device_names.push_back(DeviceNameUtils::LocalName(device->name()));
   }
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.5";
   // Check for valid partitions.
   for (const auto& partition : partitions) {
     const string& local_partition_name =
@@ -1324,6 +1349,7 @@ Status DirectSession::CreateGraphs(
     }
   }
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.6";
   for (const auto& partition : partitions) {
     std::unique_ptr<Graph> device_graph(
         new Graph(client_graph->flib_def.get()));
@@ -1336,15 +1362,19 @@ Status DirectSession::CreateGraphs(
     outputs->emplace(partition.first, std::move(device_graph));
   }
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.7";
   GraphOptimizationPassOptions optimization_options;
   optimization_options.session_options = &options_;
   optimization_options.flib_def = client_graph->flib_def.get();
   optimization_options.partition_graphs = outputs;
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.8";
   TF_RETURN_IF_ERROR(OptimizationPassRegistry::Global()->RunGrouping(
       OptimizationPassRegistry::POST_PARTITIONING, optimization_options));
 
+  CPH_VLOG(INFO) << "DirectSession::CreateGraphs.9";
   Status s;
   for (auto& partition : *outputs) {
+    CPH_VLOG(INFO) << "DirectSession::CreateGraphs.9.1";
     const string& partition_name = partition.first;
     std::unique_ptr<Graph>* graph = &partition.second;
 

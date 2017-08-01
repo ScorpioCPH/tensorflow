@@ -30,6 +30,7 @@ class XlaDeviceTest(test.TestCase):
   def testCopies(self):
     """Tests that copies between GPU and XLA devices work."""
     if not test.is_gpu_available():
+      print("is_gpu_available")
       return
 
     with session_lib.Session() as sess:

@@ -341,6 +341,7 @@ Status SimpleGraphExecutionState::InitBaseGraph(
 
 Status SimpleGraphExecutionState::BuildGraph(
     const BuildGraphOptions& options, std::unique_ptr<SimpleClientGraph>* out) {
+  CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.1";
   VLOG(1) << "BuildGraph";
   if (!graph_) {
     // It is only valid to call this method directly when the original graph
@@ -351,9 +352,11 @@ Status SimpleGraphExecutionState::BuildGraph(
   std::unique_ptr<Graph> ng(new Graph(flib_def_.get()));
   CopyGraph(*graph_, ng.get());
 
+  CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.2";
   subgraph::RewriteGraphMetadata rewrite_metadata;
   if (session_options_ == nullptr ||
       !session_options_->config.graph_options().place_pruned_graph()) {
+    CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.2.1";
     // Extract the subset of the graph that needs to be run, adding feed/fetch
     // ops as needed.
     TF_RETURN_IF_ERROR(subgraph::RewriteGraphForExecution(
@@ -361,6 +364,7 @@ Status SimpleGraphExecutionState::BuildGraph(
         options.target_nodes, device_set_->client_device()->attributes(),
         options.use_function_convention, &rewrite_metadata));
   } else {
+    CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.2.2";
     // This SimpleGraphExecutionState represents a graph that was
     // pruned when this was constructed, so we copy the metadata from
     // a member variable.
@@ -371,6 +375,7 @@ Status SimpleGraphExecutionState::BuildGraph(
   CHECK_EQ(options.feed_endpoints.size(), rewrite_metadata.feed_types.size());
   CHECK_EQ(options.fetch_endpoints.size(), rewrite_metadata.fetch_types.size());
 
+  CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.3";
   // Make a fresh copy of the function library for the client graph.
   std::unique_ptr<FunctionLibraryDefinition> flib(
       new FunctionLibraryDefinition(*flib_def_));
@@ -385,9 +390,11 @@ Status SimpleGraphExecutionState::BuildGraph(
   optimization_options.device_set = device_set_;
   optimization_options.cost_model = &costs;
 
+  CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.4";
   TF_RETURN_IF_ERROR(OptimizationPassRegistry::Global()->RunGrouping(
       OptimizationPassRegistry::POST_REWRITE_FOR_EXEC, optimization_options));
 
+  CPH_VLOG(INFO) << "SimpleGraphExecutionState::BuildGraph.5";
   // Copy the extracted graph in order to make its node ids dense,
   // since the local CostModel used to record its stats is sized by
   // the largest node id.

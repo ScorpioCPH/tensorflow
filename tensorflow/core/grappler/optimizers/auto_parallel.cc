@@ -229,6 +229,7 @@ void AutoParallel::AddOneReplica(GraphDef* graph, int number) {
 }
 
 void AutoParallel::BuildGraph(GraphDef* graph) {
+  CPH_VLOG(1) << "AutoParallel::BuildGraph";
   AddSharedNodes(graph);
   for (int i = 0; i < num_replicas_; i++) {
     AddOneReplica(graph, i);
