@@ -277,6 +277,7 @@ Status CreateXlaArgs(const Graph& graph,
 Status ConvertGraphToXla(xla::CompileOnlyClient* client,
                          std::unique_ptr<Graph> graph,
                          xla::Computation* computation, bool* has_context_arg) {
+  CPH_VLOG(1) << "ConvertGraphToXla()";
   // Create a device and context to convert the graph into an XLA computation.
   XlaOpRegistry::RegisterCompilationKernels();
   // Populate the context with args from the graph.

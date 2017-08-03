@@ -222,6 +222,7 @@ Status XlaDevice::MakeTensorFromProto(const TensorProto& tensor_proto,
 
 XlaDeviceOpRegistrations* RegisterXlaDeviceKernels(const char* device,
                                                    const char* jit_device) {
+  CPH_VLOG(1) << "RegisterXlaDeviceKernels()";
   XlaOpRegistry::RegisterCompilationKernels();
   XlaDeviceOpRegistrations* registrations = new XlaDeviceOpRegistrations;
   auto dummy_factory = [](OpKernelConstruction* context) -> OpKernel* {

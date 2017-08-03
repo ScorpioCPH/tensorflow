@@ -36,6 +36,7 @@ class XlaGpuDeviceFactory : public DeviceFactory {
 Status XlaGpuDeviceFactory::CreateDevices(const SessionOptions& options,
                                           const string& name_prefix,
                                           std::vector<Device*>* devices) {
+  CPH_VLOG(1) << "XlaGpuDeviceFactory::CreateDevices()";
   static XlaDeviceOpRegistrations* registrations =
       RegisterXlaDeviceKernels(DEVICE_XLA_GPU, DEVICE_GPU_XLA_JIT);
   (void)registrations;

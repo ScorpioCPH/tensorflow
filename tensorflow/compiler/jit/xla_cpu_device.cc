@@ -36,6 +36,7 @@ class XlaCpuDeviceFactory : public DeviceFactory {
 Status XlaCpuDeviceFactory::CreateDevices(const SessionOptions& options,
                                           const string& name_prefix,
                                           std::vector<Device*>* devices) {
+  CPH_VLOG(1) << "XlaCpuDeviceFactory::CreateDevices()";
   static XlaDeviceOpRegistrations* registrations =
       RegisterXlaDeviceKernels(DEVICE_XLA_CPU, DEVICE_CPU_XLA_JIT);
   (void)registrations;

@@ -156,6 +156,7 @@ namespace {
 // specific function call as requested.
 Status CreateXlaLaunchOp(FunctionLibraryRuntime* flr, const NodeDef& ndef,
                          std::unique_ptr<OpKernel>* kernel) {
+  CPH_VLOG(1) << "CreateXlaLaunchOp()";
   bool xla_compile = false;
   if (!flr->GetFunctionLibraryDefinition()
            ->GetAttr(ndef, kXlaCompileAttr, &xla_compile)

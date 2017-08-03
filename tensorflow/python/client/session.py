@@ -509,6 +509,7 @@ class BaseSession(SessionInterface):
   """
 
   def __init__(self, target='', graph=None, config=None):
+    print('BaseSession.__init__')
     """Constructs a new TensorFlow session.
 
     Args:
@@ -1269,6 +1270,7 @@ class Session(BaseSession):
   """
 
   def __init__(self, target='', graph=None, config=None):
+    print("Session.__init__")
     """Creates a new TensorFlow session.
 
     If no `graph` argument is specified when constructing the session,

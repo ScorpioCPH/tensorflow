@@ -129,7 +129,7 @@ class DirectSessionFactory : public SessionFactory {
   }
 
   Session* NewSession(const SessionOptions& options) override {
-    CPH_VLOG(INFO) << "DirectSessionFactory::NewSession";
+    CPH_VLOG(INFO) << "DirectSessionFactory::NewSession()";
     // Must do this before the CPU allocator is created.
     if (options.config.graph_options().build_cost_model() > 0) {
       EnableCPUAllocatorFullStats(true);
@@ -590,6 +590,7 @@ Status DirectSession::Run(const RunOptions& run_options,
 
   // Receive outputs.
   if (outputs) {
+    CPH_VLOG(1) << "Receive outputs";
     std::vector<Tensor> sorted_outputs;
     Status s = call_frame.ConsumeRetvals(&sorted_outputs);
     if (errors::IsInternal(s)) {
@@ -613,6 +614,7 @@ Status DirectSession::Run(const RunOptions& run_options,
   // Build and return the cost model as instructed.
   mutex_lock l(executor_lock_);
   if (update_cost_model) {
+    CPH_VLOG(1) << "update_cost_model";
     // Build the cost model
     std::unordered_map<string, const Graph*> device_to_graph;
     for (const PerPartitionExecutorsAndLib& partition :
@@ -633,6 +635,7 @@ Status DirectSession::Run(const RunOptions& run_options,
 
   // If requested via RunOptions, output the partition graphs.
   if (run_options.output_partition_graphs()) {
+    CPH_VLOG(1) << "output_partition_graphs";
     protobuf::RepeatedPtrField<GraphDef>* parition_graph_defs =
         run_metadata->mutable_partition_graphs();
     for (const PerPartitionExecutorsAndLib& exec_and_lib :
@@ -996,6 +999,7 @@ Status DirectSession::GetOrCreateExecutors(
     thread::ThreadPool* pool, gtl::ArraySlice<string> inputs,
     gtl::ArraySlice<string> outputs, gtl::ArraySlice<string> target_nodes,
     ExecutorsAndKeys** executors_and_keys, RunStateArgs* run_state_args) {
+
   CPH_VLOG(INFO) << "DirectSession::GetOrCreateExecutors.1";
   int64 handle_name_counter_value = -1;
   if (LogMemory::IsEnabled() || run_state_args->is_partial_run) {
@@ -1464,6 +1468,8 @@ bool DirectSession::RunState::PendingDone() const {
 void DirectSession::WaitForNotification(RunState* run_state,
                                         CancellationManager* cm,
                                         int64 timeout_in_ms) {
+
+  CPH_VLOG(1) << "DirectSession::WaitForNotification()";
   Status status =
       WaitForNotification(&run_state->executors_done, timeout_in_ms);
   if (!status.ok()) {

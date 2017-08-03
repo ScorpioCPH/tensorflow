@@ -327,6 +327,7 @@ TF_Buffer TF_GetBuffer(TF_Buffer* buffer) { return *buffer; }
 
 TF_DeprecatedSession* TF_NewDeprecatedSession(const TF_SessionOptions* opt,
                                               TF_Status* status) {
+  CPH_VLOG(1) << "TF_NewDeprecatedSession()";
   Session* session;
   status->status = NewSession(opt->options, &session);
   if (status->status.ok()) {

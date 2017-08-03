@@ -240,7 +240,7 @@ Graph::Graph(const OpRegistryInterface* ops)
     : ops_(ops, FunctionDefLibrary()), arena_(8 << 10 /* 8kB */) {
   versions_.set_producer(TF_GRAPH_DEF_VERSION);
   versions_.set_min_consumer(TF_GRAPH_DEF_VERSION_MIN_CONSUMER);
-
+  CPH_VLOG(1) << "Graph::Graph().1";
   // Source and sink have no endpoints, just control edges.
   NodeDef def;
   def.set_name("_SOURCE");
@@ -260,6 +260,7 @@ Graph::Graph(const OpRegistryInterface* ops)
 
 Graph::Graph(const FunctionLibraryDefinition& flib_def)
     : Graph(flib_def.default_registry()) {
+  CPH_VLOG(1) << "Graph::Graph().2";
   Status s = ops_.AddLibrary(flib_def);
   CHECK(s.ok()) << s.error_message();
 }

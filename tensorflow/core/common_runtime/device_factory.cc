@@ -64,6 +64,8 @@ int32 DeviceFactory::DevicePriority(const string& device_type) {
 // static
 void DeviceFactory::Register(const string& device_type, DeviceFactory* factory,
                              int priority) {
+  CPH_VLOG(1) << "DeviceFactory::Register, type: "
+                 << device_type << ", priority: " << priority;
   mutex_lock l(*get_device_factory_lock());
   std::unique_ptr<DeviceFactory> factory_ptr(factory);
   std::unordered_map<string, FactoryItem>& factories = device_factories();
@@ -92,6 +94,7 @@ DeviceFactory* DeviceFactory::GetFactory(const string& device_type) {
 Status DeviceFactory::AddDevices(const SessionOptions& options,
                                  const string& name_prefix,
                                  std::vector<Device*>* devices) {
+  CPH_VLOG(1) << "DeviceFactory::AddDevices()";
   // CPU first. A CPU device is required.
   auto cpu_factory = GetFactory("CPU");
   if (!cpu_factory) {
@@ -119,6 +122,7 @@ Status DeviceFactory::AddDevices(const SessionOptions& options,
 Device* DeviceFactory::NewDevice(const string& type,
                                  const SessionOptions& options,
                                  const string& name_prefix) {
+  CPH_VLOG(1) << "DeviceFactory::NewDevice()";
   auto device_factory = GetFactory(type);
   if (!device_factory) {
     return nullptr;

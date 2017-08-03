@@ -2045,6 +2045,7 @@ def _name_from_scope_name(name):
 class _ScopedTF_Graph(object):
 
   def __init__(self):
+    print("_ScopedTF_Graph.__init__")
     self.g = c_api.TF_NewGraph()
 
   def __del__(self):
@@ -2098,6 +2099,7 @@ class Graph(object):
   """
 
   def __init__(self):
+    print("Graph __init__")
     """Creates a new, empty Graph."""
     # Protects the core state that may be accessed by multiple readers.
     # Only state that can be returned via public accessors (`as_graph_def()`,
@@ -2167,8 +2169,10 @@ class Graph(object):
     # TODO(skyewm): fold as much of the above as possible into the C
     # implementation
     if _USE_C_API:
+      print("_USE_C_API")
       self._c_graph = _ScopedTF_Graph()
     else:
+      print("not _USE_C_API")
       self._c_graph = None
 
   def _check_not_finalized(self):
@@ -3971,6 +3975,7 @@ class _DefaultGraphStack(_DefaultStack):
     self._global_default_graph = None
 
   def get_default(self):
+    print("_DefaultGraphStack.get_default()")
     """Override that returns a global default if the stack is empty."""
     ret = super(_DefaultGraphStack, self).get_default()
     if ret is None:
@@ -3983,6 +3988,7 @@ class _DefaultGraphStack(_DefaultStack):
       #   provide some other feedback to prevent confusion when a mixture of
       #   the global default graph and an explicit graph are combined in the
       #   same process.
+      print("new Graph()")
       self._global_default_graph = Graph()
     return self._global_default_graph
 
@@ -4006,6 +4012,7 @@ def reset_default_graph():
 
 
 def get_default_graph():
+  print("get_default_graph")
   """Returns the default graph for the current thread.
 
   The returned graph will be the innermost graph on which a

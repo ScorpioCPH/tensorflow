@@ -196,6 +196,7 @@ Status ConvertOpRequestToXlaNode(const xla::OperationRequest& operation_request,
 
 void SetupXlaCpuClient(std::unique_ptr<FunctionLibraryDefinition>* flib_def,
                        std::unique_ptr<XlaCompiler>* compiler) {
+  CPH_VLOG(1) << "SetupXlaCpuClient()";
   xla::Client* client = xla::ClientLibrary::LocalClientOrDie();
   XlaOpRegistry::RegisterCompilationKernels();
 
