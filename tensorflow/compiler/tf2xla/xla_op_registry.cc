@@ -55,6 +55,8 @@ XlaOpRegistry::~XlaOpRegistry() = default;
 /* static */ void XlaOpRegistry::RegisterBackend(
     const string& compilation_device_name,
     gtl::ArraySlice<DataType> supported_types, BackendOpFilter op_filter) {
+  CPH_VLOG(1) << "XlaOpRegistry::RegisterBackend(), compilation_device_name: " << compilation_device_name;
+
   XlaOpRegistry& registry = Instance();
   mutex_lock lock(registry.mutex_);
   auto result = registry.backends_.emplace(compilation_device_name, Backend());
@@ -163,12 +165,14 @@ void XlaOpRegistry::RegisterCompilationKernels() {
           allowed_values->add_type(DT_RESOURCE);
         }
       }
+
+
       if (backend.second.op_filter != nullptr &&
           !backend.second.op_filter(kdef.get())) {
         continue;
       }
-      // VLOG(2) << "XLA op registration: device: " << backend.first
-      //         << " op: " << op.first;
+      VLOG(2) << "XLA op registration: device: " << backend.first
+              << " op: " << op.first;
       registry.kernel_registrars_.emplace_back(
           new kernel_factory::OpKernelRegistrar(
               new KernelDef(*kdef), "XlaJitOp", op.second->factory));
@@ -271,6 +275,7 @@ XlaOpRegistrar::XlaOpRegistrar(
 XlaBackendRegistrar::XlaBackendRegistrar(
     StringPiece name, gtl::ArraySlice<DataType> types,
     XlaOpRegistry::BackendOpFilter op_filter) {
+  CPH_VLOG(1) << "XlaBackendRegistrar(), name: " << name.ToString();
   XlaOpRegistry& registry = XlaOpRegistry::Instance();
   registry.RegisterBackend(name.ToString(), types, op_filter);
 }
