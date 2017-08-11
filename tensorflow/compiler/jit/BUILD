@@ -20,6 +20,7 @@ package(
 
 load("//tensorflow:tensorflow.bzl", "tf_kernel_library")
 load("@local_config_cuda//cuda:build_defs.bzl", "if_cuda")
+load("@local_config_cuda//cuda:build_defs.bzl", "if_cuda_is_configured")
 
 # Target that bundles up the XLA CPU and GPU JIT devices.
 cc_library(
@@ -28,9 +29,10 @@ cc_library(
     deps = [
         ":xla_cpu_device",
         ":xla_cpu_jit",
+    ] + if_cuda_is_configured([
         ":xla_gpu_device",
         ":xla_gpu_jit",
-    ],
+    ]),
     alwayslink = 1,
 )
 
